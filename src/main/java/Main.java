@@ -3,12 +3,13 @@ import java.util.Scanner;
 
 public class Main {
 
+    private static final Scanner input = new Scanner(System.in);
+
     public static void main(String[] args) {
 
         Connection conn = null;
 
         //Capture username & password
-        Scanner input = new Scanner(System.in);
         String url = "jdbc:mysql://localhost:3306/ACME";
 
         System.out.print("mysql username: ");
@@ -37,7 +38,7 @@ public class Main {
             System.out.println("5 --> <placeholder>");
             System.out.println("6 --> <placeholder>");
             System.out.println("7 --> <placeholder>");
-            System.out.println("8 --> exit");
+            System.out.println("8 --> exit\n");
 
             System.out.print("Enter Option: ");
             option = input.nextInt();
@@ -51,9 +52,69 @@ public class Main {
                     break;
                 case 3:
                     System.out.println("Create New Product");
+
+                    try {
+                        PreparedStatement st = conn.prepareStatement("INSERT INTO Product (productName, currentMSRP, costToProduce, releaseDate, description) VALUES (?, ?, ?, ?, ?, ?)");
+                        System.out.print("Enter Name: ");
+                        input.nextLine();
+                        st.setString(1, input.nextLine());
+                        st.setString(2, Double.toString(ensureInputDouble("currentMSRP")));
+                        st.setString(3, Double.toString(ensureInputDouble("costToProduce")));
+                        st.setString(4, ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "releaseDate"));
+                        System.out.println("Enter Description: ");
+                        st.setString(5, input.nextLine());
+                        //st.execute();
+                        System.out.println("Product Successfully Created\n");
+                        st.close();
+                    }catch (SQLException e)
+                    {
+                        System.err.println(e.getMessage());
+                    }
                     break;
                 case 4:
                     System.out.println("Least Popular Items in time range");
+
+                    try
+                    {
+                        PreparedStatement st = conn.prepareStatement("SELECT sub.productName AS productName " +
+                                "FROM (" +
+                                "    SELECT p.productName, COUNT(*) AS occurrences" +
+                                "    FROM transactionLineItem tli" +
+                                "    JOIN transaction t ON tli.transactionID = t.transactionID" +
+                                "    JOIN product p ON tli.productID = p.productID" +
+                                "    WHERE t.transactionDate BETWEEN ? AND ?" +
+                                "    GROUP BY tli.productID" +
+                                ") AS sub " +
+                                "WHERE sub.occurrences = (" +
+                                "    SELECT MIN(occurrences) FROM (" +
+                                "        SELECT COUNT(*) AS occurrences" +
+                                "        FROM transactionLineItem tli" +
+                                "        JOIN transaction t ON tli.transactionID = t.transactionID" +
+                                "        WHERE t.transactionDate BETWEEN ? AND ?" +
+                                "        GROUP BY tli.productID" +
+                                "    ) AS sub2" +
+                                ")");
+
+                        input.nextLine();
+                        String startDate = ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "Start Date");
+                        String endDate = ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "End Date");
+
+                        st.setString(1, startDate);
+                        st.setString(2, endDate);
+                        st.setString(3, startDate);
+                        st.setString(4, endDate);
+
+                        ResultSet set = st.executeQuery();
+                        System.out.println("Result:");
+                        while(set.next())
+                        {
+                            System.out.println("\t"+set.getString("productName"));
+                        }
+                        System.out.println();
+
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 5:
                     System.out.println("placeholder");
@@ -65,6 +126,7 @@ public class Main {
                     System.out.println("placeholder");
                     break;
                 default:
+                    if(option == 8) continue;
                     System.out.println("Menu options are integers 1 - 8.");
                     break;
             }
@@ -77,5 +139,55 @@ public class Main {
             e.printStackTrace();
         }
         System.out.println("Connection closed. Goodbye.");
+    }
+
+    private static double ensureInputDouble(String fieldName)
+    {
+        double toReturn = Double.NaN;
+        boolean isValid = false;
+        while(!isValid)
+        {
+            try {
+                System.out.print(String.format("Enter %s: " , fieldName));
+                toReturn = Double.parseDouble(input.nextLine());
+                isValid = true;
+            }catch (NumberFormatException e)
+            {
+                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+            }
+        }
+
+        return toReturn;
+    }
+
+    private static int ensureInputInteger(String fieldName)
+    {
+        int toReturn = Integer.MIN_VALUE;
+        boolean isValid = false;
+        while(!isValid)
+        {
+            try {
+                System.out.print(String.format("Enter %s: " , fieldName));
+                toReturn = Integer.parseInt(input.nextLine());
+                isValid = true;
+            }catch (NumberFormatException e)
+            {
+                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+            }
+        }
+
+        return toReturn;
+    }
+
+    private static String ensureInputFormat(String regex, String fieldName)
+    {
+        String toReturn;
+        System.out.print(String.format("Enter %s: ", fieldName));
+        while(!(toReturn = input.nextLine()).matches(regex))
+        {
+            System.out.println(String.format("%s does not match desired format, try again", fieldName));
+            System.out.print(String.format("Enter %s: ", fieldName));
+        }
+        return toReturn;
     }
 }
