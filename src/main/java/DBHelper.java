@@ -43,7 +43,7 @@ public class DBHelper {
         }
     }
 
-    public void DeleteProductIDFromInventory() throws SQLException {
+    public void DeleteProductIDFromInventory() {
         System.out.println("Enter product ID to delete:");
         int productNum = scanner.nextInt();
 
