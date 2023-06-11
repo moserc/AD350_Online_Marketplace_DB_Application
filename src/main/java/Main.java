@@ -54,10 +54,8 @@ public class Main {
                     System.out.println("placeholder");
                     break;
                 case 3:
-                    System.out.println("Create New Product");
-
                     try {
-                        PreparedStatement st = conn.prepareStatement("INSERT INTO Product (productName, currentMSRP, costToProduce, releaseDate, description) VALUES (?, ?, ?, ?, ?, ?)");
+                        PreparedStatement st = conn.prepareStatement("INSERT INTO Product (productName, currentMSRP, costToProduce, releaseDate, description) VALUES (?, ?, ?, ?, ?)");
                         System.out.print("Enter Name: ");
                         input.nextLine();
                         st.setString(1, input.nextLine());
@@ -66,17 +64,16 @@ public class Main {
                         st.setString(4, ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "releaseDate"));
                         System.out.println("Enter Description: ");
                         st.setString(5, input.nextLine());
-                        //st.execute();
+                        st.execute();
                         System.out.println("Product Successfully Created\n");
                         st.close();
                     }catch (SQLException e)
                     {
+                        System.out.println("Product not Created\n");
                         System.err.println(e.getMessage());
                     }
                     break;
                 case 4:
-                    System.out.println("Least Popular Items in time range");
-
                     try
                     {
                         PreparedStatement st = conn.prepareStatement("SELECT sub.productName AS productName " +
@@ -120,7 +117,11 @@ public class Main {
                     }
                     break;
                 case 5:
-                    dbHelper.ModifyInventory();
+                    try {
+                        dbHelper.ModifyInventory();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case 6:
                     System.out.println("Delete a product from inventory.");
