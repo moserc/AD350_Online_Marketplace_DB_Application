@@ -22,7 +22,7 @@ public class Main {
 
         try{
             //Connect
-            conn = DriverManager.getConnection(url, username, password); //connector jar file must be in the classpath
+            conn = DriverManager.getConnection(url, username, password);
             System.out.println("Connection successful.");
             dbHelper = new DBHelper(input, conn); // connection needs to be established before setting up the helper
         }catch (SQLException e){
@@ -30,12 +30,11 @@ public class Main {
             System.exit(0);
         }
 
-        //do stuff
         int option = -1;
         while (option != 8) {
-            System.out.println("Menu options: ");
-            System.out.println("1 --> <placeholder>");
-            System.out.println("2 --> <placeholder>");
+            System.out.println("\nMenu options: ");
+            System.out.println("1 --> Products in inventory");
+            System.out.println("2 --> Most popular items in time range");
             System.out.println("3 --> Create new Product");
             System.out.println("4 --> Least Popular Items in time range");
             System.out.println("5 --> Modify a product's quantity");
@@ -48,10 +47,10 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    System.out.println("placeholder");
+                    dbHelper.ShowInventory();
                     break;
                 case 2:
-                    System.out.println("placeholder");
+                    dbHelper.PopularItems();
                     break;
                 case 3:
                     try {
