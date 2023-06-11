@@ -39,7 +39,7 @@ public class Main {
             System.out.println("3 --> Create new Product");
             System.out.println("4 --> Least Popular Items in time range");
             System.out.println("5 --> Modify a product's quantity");
-            System.out.println("6 --> <placeholder>");
+            System.out.println("6 --> Delete a product from inventory");
             System.out.println("7 --> <placeholder>");
             System.out.println("8 --> exit\n");
 
@@ -117,14 +117,10 @@ public class Main {
                     }
                     break;
                 case 5:
-                    try {
-                        dbHelper.ModifyInventory();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
+                    dbHelper.ModifyProductIDQuantityFromInventory();
                     break;
                 case 6:
-                    System.out.println("Delete a product from inventory.");
+                    dbHelper.DeleteProductIDFromInventory();
                     break;
                 case 7:
                     System.out.println("placeholder");
