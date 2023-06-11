@@ -76,9 +76,9 @@ public class Main {
                 case 4:
                     try
                     {
-                        PreparedStatement st = conn.prepareStatement("SELECT sub.productName AS productName " +
+                        PreparedStatement st = conn.prepareStatement("SELECT sub.productName AS productName, sub.productID AS productID " +
                                 "FROM (" +
-                                "    SELECT p.productName, COUNT(*) AS occurrences" +
+                                "    SELECT p.productName, p.productID, COUNT(*) AS occurrences" +
                                 "    FROM transactionLineItem tli" +
                                 "    JOIN transaction t ON tli.transactionID = t.transactionID" +
                                 "    JOIN product p ON tli.productID = p.productID" +
@@ -108,7 +108,7 @@ public class Main {
                         System.out.println("Result:");
                         while(set.next())
                         {
-                            System.out.println("\t"+set.getString("productName"));
+                            System.out.println(String.format("\tProduct\n\t\tID : %s Name : %s", set.getString("productID"), set.getString("productName")));
                         }
                         System.out.println();
 
