@@ -26,38 +26,38 @@ public class Main {
             int option;
             while (true) {
                 System.out.println("Menu options: ");
-                System.out.println("1 --> <blank>");
-                System.out.println("2 --> <blank>");
-                System.out.println("3 --> <blank>");
-                System.out.println("4 --> <blank>");
-                System.out.println("5 --> <blank>");
-                System.out.println("6 --> <blank>");
-                System.out.println("7 --> <blank>");
+                System.out.println("1 --> <placeholder>");
+                System.out.println("2 --> <placeholder>");
+                System.out.println("3 --> <placeholder>");
+                System.out.println("4 --> <placeholder>");
+                System.out.println("5 --> <placeholder>");
+                System.out.println("6 --> <placeholder>");
+                System.out.println("7 --> <placeholder>");
                 System.out.println("8 --> exit");
 
                 option = input.nextInt();
 
                 switch (option) {
                     case 1:
-                        System.out.println("You chose Option 1");
+                        System.out.println("placeholder");
                         break;
                     case 2:
-                        System.out.println("You chose Option 2");
+                        System.out.println("placeholder");
                         break;
                     case 3:
-                        System.out.println("You chose Option 3");
+                        System.out.println("placeholder");
                         break;
                     case 4:
-                        System.out.println("You chose Option 4");
+                        System.out.println("placeholder");
                         break;
                     case 5:
-                        System.out.println("You chose Option 5");
+                        System.out.println("placeholder");
                         break;
                     case 6:
-                        System.out.println("You chose Option 6");
+                        System.out.println("placeholder");
                         break;
                     case 7:
-                        System.out.println("You chose Option 7");
+                        System.out.println("placeholder");
                         break;
                     case 8:
                         //close connection
@@ -65,18 +65,13 @@ public class Main {
                         System.out.println("Connection closed. Goodbye.");
                         System.exit(0);
                         break;
-
                     default:
-                        System.out.println("Invalid choice. Please try again.");
+                        System.out.println("Menu options are integers 1 - 8.");
                         break;
                 }
             }
-
-
-
         }catch (Exception e){
             System.out.println("Cannot connect to DB: " + e);
         }
     }
-
 }
