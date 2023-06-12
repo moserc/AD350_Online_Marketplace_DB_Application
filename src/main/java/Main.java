@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class Main {
@@ -64,7 +65,7 @@ public class Main {
                         st.setString(4, ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "releaseDate"));
                         System.out.println("Enter Description: ");
                         st.setString(5, input.nextLine());
-                        st.execute();
+                        st.executeUpdate();
                         System.out.println("Product Successfully Created\n");
                         st.close();
                     }catch (SQLException e)
@@ -108,7 +109,7 @@ public class Main {
                         System.out.println("Result:");
                         while(set.next())
                         {
-                            System.out.println(String.format("\tProduct\n\t\tID : %s Name : %s", set.getString("productID"), set.getString("productName")));
+                            System.out.printf("\tProduct\n\t\tID : %s Name : %s%n", set.getString("productID"), set.getString("productName"));
                         }
                         System.out.println();
 
@@ -152,12 +153,12 @@ public class Main {
         while(!isValid)
         {
             try {
-                System.out.print(String.format("Enter %s: " , fieldName));
+                System.out.printf("Enter %s: " , fieldName);
                 toReturn = Double.parseDouble(input.nextLine());
                 isValid = true;
             }catch (NumberFormatException e)
             {
-                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+                System.out.printf("%s must be an Double, Try again%n", fieldName);
             }
         }
 
@@ -171,12 +172,12 @@ public class Main {
         while(!isValid)
         {
             try {
-                System.out.print(String.format("Enter %s: " , fieldName));
+                System.out.printf("Enter %s: " , fieldName);
                 toReturn = Integer.parseInt(input.nextLine());
                 isValid = true;
             }catch (NumberFormatException e)
             {
-                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+                System.out.printf("%s must be an Double, Try again%n", fieldName);
             }
         }
 
@@ -186,11 +187,11 @@ public class Main {
     private static String ensureInputFormat(String regex, String fieldName)
     {
         String toReturn;
-        System.out.print(String.format("Enter %s: ", fieldName));
+        System.out.printf("Enter %s: ", fieldName);
         while(!(toReturn = input.nextLine()).matches(regex))
         {
-            System.out.println(String.format("%s does not match desired format, try again", fieldName));
-            System.out.print(String.format("Enter %s: ", fieldName));
+            System.out.printf("%s does not match desired format, try again%n", fieldName);
+            System.out.printf("Enter %s: ", fieldName);
         }
         return toReturn;
     }
