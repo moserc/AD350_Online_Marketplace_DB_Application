@@ -158,11 +158,19 @@ public class DBHelper {
         results.close();
         for (int i : map.keySet()) {
             String case7_3 = case7_3(i);
-            ResultSet results2 = connection.executeQuery(case7_3);
-            results2.next();
-            map.get(i)[2] = results2.getString("productName");
-            results2.close();
+            ResultSet results1 = connection.executeQuery(case7_3);
+            results1.next();
+            map.get(i)[2] = results1.getString("productName");
+            results1.close();
         }
+        String case7_4 = case7_4();
+        ResultSet results2 = connection.executeQuery(case7_4);
+        while (results2.next()) {
+            map.put(Integer.valueOf(results2.getString("id")), new String[]{
+                    results2.getString("name"), results2.getString("email"),
+                    results2.getString("most_bought")});
+        }
+        results2.close();
         LocalDate monthsAgo = LocalDate.now().minusMonths(3);
         LocalDate today = LocalDate.now();
         String startDate = monthsAgo.toString();
@@ -207,32 +215,39 @@ public class DBHelper {
 
     private String case7_1() {
         StringBuilder temp = new StringBuilder();
-        temp.append("SELECT transaction.userID AS id, CONCAT(firstName, \" \", LastName) AS name, email ");
-        temp.append("FROM user, transaction ");
-        temp.append("WHERE user.userID = transaction.userID ");
-        temp.append("GROUP BY transaction.userID;");
+        temp.append("SELECT transaction.userID AS id, CONCAT(firstName, \" \", LastName) AS name, email " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                "GROUP BY transaction.userID;");
         return temp.toString();
     }
 
     private String case7_2(String startDate, String endDate) {
         StringBuilder temp = new StringBuilder();
-        temp.append("SELECT transaction.userID AS id ");
-        temp.append("FROM transaction, user ");
-        temp.append("WHERE transaction.userID NOT IN (SELECT transaction.userID ");
-        temp.append("FROM user, transaction ");
-        temp.append("WHERE user.userID = transaction.userID ");
-        temp.append(String.format("AND transactionDate Between '%s' AND '%s') ", startDate, endDate ));
-        temp.append("GROUP BY transaction.userID;");
+        temp.append("SELECT user.userID AS id FROM transaction, user " +
+                "WHERE user.userID NOT IN (SELECT transaction.userID " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                String.format("AND transactionDate Between '%s' AND '%s') ", startDate, endDate ) +
+                "GROUP BY user.userID;") ;
         return temp.toString();
     }
 
     private String case7_3(int userID) {
         StringBuilder temp = new StringBuilder();
-        temp.append("SELECT user.userID, transactionlineitem.productID, product.productName, transactionlineitem.quantity ");
-        temp.append("FROM transactionlineitem INNER JOIN transaction ON ");
-        temp.append("transaction.transactionID = transactionlineitem.transactionID INNER JOIN product ON ");
-        temp.append("product.productID = transactionlineitem.productID INNER JOIN user ON transaction.userID = user.userID ");
-        temp.append(String.format("WHERE user.userID = %d ORDER BY quantity DESC LIMIT 1;", userID));
+        temp.append("SELECT user.userID, transactionlineitem.productID, product.productName, transactionlineitem.quantity " +
+                "FROM transactionlineitem INNER JOIN transaction ON " +
+                "transaction.transactionID = transactionlineitem.transactionID INNER JOIN product ON " +
+                "product.productID = transactionlineitem.productID INNER JOIN user ON transaction.userID = user.userID " +
+                String.format("WHERE user.userID = %d ORDER BY quantity DESC LIMIT 1;", userID));
+        return temp.toString();
+    }
+
+    private String case7_4() {
+        StringBuilder temp = new StringBuilder();
+        temp.append("SELECT user.userID AS id, CONCAT(firstName, \" \", LastName) AS name, " +
+                "email, \"No_Purchases\" AS most_bought FROM user, transaction " +
+                "WHERE user.userID NOT IN (SELECT transaction.userID AS id " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                "GROUP BY transaction.userID) Group By user.userID;");
         return temp.toString();
     }
 }
