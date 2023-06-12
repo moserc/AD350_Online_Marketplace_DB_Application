@@ -1,10 +1,10 @@
-package AcmeApplication;
+package AcmeApplicationPrototype;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
 
-public class acmeAppDriver {
+public class acmeAppPrototypeDriver {
     public static void main(String[] args) {
         displayIntro();
         loadConnectionDriver();
