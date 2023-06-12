@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class Main {
@@ -39,7 +40,7 @@ public class Main {
             System.out.println("4 --> Least Popular Items in time range");
             System.out.println("5 --> Modify a product's quantity");
             System.out.println("6 --> Delete a product from inventory");
-            System.out.println("7 --> <placeholder>");
+            System.out.println("7 --> Gets list of users haven't purchased in months");
             System.out.println("8 --> exit\n");
 
             System.out.print("Enter Option: ");
@@ -63,7 +64,7 @@ public class Main {
                         st.setString(4, ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "releaseDate"));
                         System.out.println("Enter Description: ");
                         st.setString(5, input.nextLine());
-                        st.execute();
+                        st.executeUpdate();
                         System.out.println("Product Successfully Created\n");
                         st.close();
                     }catch (SQLException e)
@@ -107,7 +108,7 @@ public class Main {
                         System.out.println("Result:");
                         while(set.next())
                         {
-                            System.out.println(String.format("\tProduct\n\t\tID : %s Name : %s", set.getString("productID"), set.getString("productName")));
+                            System.out.printf("\tProduct\n\t\tID : %s Name : %s%n", set.getString("productID"), set.getString("productName"));
                         }
                         System.out.println();
 
@@ -122,7 +123,41 @@ public class Main {
                     dbHelper.DeleteProductIDFromInventory();
                     break;
                 case 7:
-                    System.out.println("placeholder");
+                    input.nextLine();
+                    String[] currentDate = ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "Current Date").split("-");
+                    int months = ensureInputInteger("Passed Months Since Last Purchase");
+
+                    Calendar cal = Calendar.getInstance();
+                    cal.set(Calendar.YEAR, Integer.parseInt(currentDate[0]));
+                    cal.set(Calendar.MONTH, Integer.parseInt(currentDate[1])-1);
+                    cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(currentDate[2]));
+                    cal.roll(Calendar.MONTH, -1*Math.abs(months));
+                    cal.roll(Calendar.YEAR, (-1*Math.abs(months))/12);
+
+                    String startDate = String.format("%d-%d-%d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH));
+
+                    try {
+                        PreparedStatement st = conn.prepareStatement("SELECT u.userID AS ID, u.email AS Email, concat( u.firstName,\" \", u.lastName) AS Name " +
+                                "FROM user u " +
+                                "WHERE u.userID NOT IN (" +
+                                "    SELECT t.userID" +
+                                "    FROM transaction t" +
+                                "    WHERE t.transactionDate >= ?" +
+                                ")");
+
+                        st.setString(1, startDate);
+
+                        ResultSet rs = st.executeQuery();
+                        System.out.println("Users To Email:");
+                        while(rs.next())
+                        {
+                            System.out.printf("\tId : %s, Name : %s, Email : %s%n", rs.getString("ID"), rs.getString("Name"), rs.getString("Email"));
+                        }
+
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     break;
                 default:
                     if(option == 8) continue;
@@ -147,12 +182,12 @@ public class Main {
         while(!isValid)
         {
             try {
-                System.out.print(String.format("Enter %s: " , fieldName));
+                System.out.printf("Enter %s: " , fieldName);
                 toReturn = Double.parseDouble(input.nextLine());
                 isValid = true;
             }catch (NumberFormatException e)
             {
-                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+                System.out.printf("%s must be an Double, Try again%n", fieldName);
             }
         }
 
@@ -166,12 +201,12 @@ public class Main {
         while(!isValid)
         {
             try {
-                System.out.print(String.format("Enter %s: " , fieldName));
+                System.out.printf("Enter %s: " , fieldName);
                 toReturn = Integer.parseInt(input.nextLine());
                 isValid = true;
             }catch (NumberFormatException e)
             {
-                System.out.println(String.format("%s must be an Double, Try again", fieldName));
+                System.out.printf("%s must be an Double, Try again%n", fieldName);
             }
         }
 
@@ -181,11 +216,11 @@ public class Main {
     private static String ensureInputFormat(String regex, String fieldName)
     {
         String toReturn;
-        System.out.print(String.format("Enter %s: ", fieldName));
+        System.out.printf("Enter %s: ", fieldName);
         while(!(toReturn = input.nextLine()).matches(regex))
         {
-            System.out.println(String.format("%s does not match desired format, try again", fieldName));
-            System.out.print(String.format("Enter %s: ", fieldName));
+            System.out.printf("%s does not match desired format, try again%n", fieldName);
+            System.out.printf("Enter %s: ", fieldName);
         }
         return toReturn;
     }
