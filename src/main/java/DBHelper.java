@@ -11,6 +11,70 @@ public class DBHelper {
         this.scanner = scanner;
         this.connection = connection;
     }
+
+    public void ShowInventory() {
+
+        System.out.println("Products in inventory: ");
+
+        try{ //select statement to isolate products currently stocked in inventory
+            Statement invStatement = connection.createStatement();
+            String getInventory =  "SELECT product.productID, productName, quantity "
+                    + "FROM inventory, product "
+                    + "WHERE inventory.productID = product.productID "
+                    + "AND quantity > 0 AND quantity IS NOT NULL "
+                    + "ORDER BY quantity desc";
+            ResultSet invSet = invStatement.executeQuery(getInventory);
+
+            //display product name, ID, and quantity
+            while (invSet.next()){
+                System.out.println(invSet.getString("productName") +
+                        ", " + invSet.getString("product.productID") +
+                        ", " + invSet.getInt("quantity") + " in stock.");
+            }
+            invSet.close();
+        }catch (SQLException e){
+            System.out.println("Unable to display products in the inventory.");
+        }
+    }
+
+    public void PopularItems() {
+
+        //Capture date range. Returns no list if typed incorrectly.
+        System.out.println("Enter begin date formatted as yyyy-mm-dd: ");
+        String t1 = scanner.next();
+        System.out.println("Enter end date formatted as yyyy-mm-dd: ");
+        String t2 = scanner.next();
+
+        //Sum units sold by product ID, order by descending and limit to three items
+        try{
+            System.out.println("Three top-selling items between dates " + t1 + " and " + t2 + ": ");
+
+            String getPopular =  "SELECT productName, product.productID, SUM(quantity) "
+                    + "FROM product "
+                    + "INNER JOIN transactionLineItem LI ON LI.productID = product.productID "
+                    + "INNER JOIN transaction T ON T.transactionID = LI.transactionID "
+                    + "WHERE T.transactionDate BETWEEN DATE(?) AND DATE(?) "
+                    + "GROUP BY product.productID "
+                    + "ORDER BY SUM(quantity) desc "
+                    + "LIMIT 3";
+            PreparedStatement popularStatement = connection.prepareStatement(getPopular);
+            popularStatement.setString(1,t1);
+            popularStatement.setString(2,t2);
+
+            ResultSet popularSet = popularStatement.executeQuery();
+
+            //Display items by popularity, show item name, ID, and units sold within the given date range
+            while (popularSet.next()){
+                System.out.println("Product: " + popularSet.getString("productName") +
+                        ", ID: " + popularSet.getString("product.productID") +
+                        ", Units sold: " + popularSet.getString("SUM(quantity)"));
+            }
+            popularSet.close();
+        }catch (SQLException e){
+            System.out.println("Unable to display results. Check date format.");
+        }
+    }
+
     public void ModifyProductIDQuantityFromInventory()  {
 
         System.out.println("Enter product ID to update:");
