@@ -511,7 +511,6 @@ public class acmeAppDriver {
         displaySuccess();
     }
 
-
     public static int addToInventory(Scanner console, Connection conn, String productName) throws SQLException {
         Statement connection = conn.createStatement();
         String getId = "SELECT productID FROM product WHERE productName = '" + productName + "';";

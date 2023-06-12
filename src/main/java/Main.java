@@ -40,7 +40,7 @@ public class Main {
             System.out.println("4 --> Least Popular Items in time range");
             System.out.println("5 --> Modify a product's quantity");
             System.out.println("6 --> Delete a product from inventory");
-            System.out.println("7 --> <placeholder>");
+            System.out.println("7 --> List users to send promotional emails");
             System.out.println("8 --> exit\n");
 
             System.out.print("Enter Option: ");
@@ -123,7 +123,11 @@ public class Main {
                     dbHelper.DeleteProductIDFromInventory();
                     break;
                 case 7:
-                    System.out.println("placeholder");
+                    try {
+                        dbHelper.processCase7();
+                    } catch (SQLException e) {
+                        System.out.println(e);
+                    }
                     break;
                 default:
                     if(option == 8) continue;
