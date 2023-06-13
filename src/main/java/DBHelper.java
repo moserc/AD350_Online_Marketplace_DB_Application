@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.Scanner;
 
 //class to house methods used in the main program driver class
@@ -137,5 +139,115 @@ public class DBHelper {
         catch(SQLException e) {
             System.out.println("Unable to delete product ");
         }
+    }
+
+    public void processCase7() throws SQLException {
+        StringBuilder header = new StringBuilder();
+        header.append("\n"+ getBorder());
+        header.append("|  List users to send promotional emails:           |\n");
+        header.append(getBorder());
+        System.out.println(header);
+        Statement connection = this.connection.createStatement();
+        LinkedHashMap<Integer, String[]> map = new LinkedHashMap<>();
+        String case7_1 = case7_1();
+        ResultSet results = connection.executeQuery(case7_1);
+        while (results.next()) {
+            map.put(Integer.valueOf(results.getString("id")), new String[]{
+                    results.getString("name"), results.getString("email"), ""});
+        }
+        results.close();
+        for (int i : map.keySet()) {
+            String case7_3 = case7_3(i);
+            ResultSet results1 = connection.executeQuery(case7_3);
+            results1.next();
+            map.get(i)[2] = results1.getString("productName");
+            results1.close();
+        }
+        String case7_4 = case7_4();
+        ResultSet results2 = connection.executeQuery(case7_4);
+        while (results2.next()) {
+            map.put(Integer.valueOf(results2.getString("id")), new String[]{
+                    results2.getString("name"), results2.getString("email"),
+                    results2.getString("most_bought")});
+        }
+        results2.close();
+        LocalDate monthsAgo = LocalDate.now().minusMonths(3);
+        LocalDate today = LocalDate.now();
+        String startDate = monthsAgo.toString();
+        String endDate = today.toString();
+        String case7_2 = case7_2(startDate, endDate);
+        ResultSet results3 = connection.executeQuery(case7_2);
+        StringBuilder temp = new StringBuilder();
+        temp.append(getBorder());
+        temp.append("| Users who haven't made purchases in a few months  |\n");
+        temp.append(getBorder());
+        temp.append(String.format("|%-4s%-15s%-17s%-12s%s|\n",
+                "id", "name", "email", "most_bought", generateString(3, " ")));
+        temp.append(getBorder());
+        int count = 0;
+        while (results3.next()) {
+            count++;
+            int id = Integer.parseInt(results3.getString("id"));
+            String line = String.format("|%-4d%-15s%-17s%-12s", id,
+                    map.get(id)[0], map.get(id)[1], map.get(id)[2]);
+            temp.append(line + generateString(52 - line.length(), " ") + "|\n");
+            temp.append(getBorder());
+        }
+        if(count == 0) {
+            temp.append("|       All Users Have Made Recent Purchases        |\n");
+            temp.append(getBorder());
+        }
+        System.out.println(temp);
+        results.close();
+    }
+
+    private String generateString(int n, String s) {
+        StringBuilder temp = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            temp.append(s);
+        }
+        return temp.toString();
+    }
+
+    private String getBorder() {
+        return generateString(53, "-") + "\n";
+    }
+
+    private String case7_1() {
+        StringBuilder temp = new StringBuilder();
+        temp.append("SELECT transaction.userID AS id, CONCAT(firstName, \" \", LastName) AS name, email " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                "GROUP BY transaction.userID;");
+        return temp.toString();
+    }
+
+    private String case7_2(String startDate, String endDate) {
+        StringBuilder temp = new StringBuilder();
+        temp.append("SELECT user.userID AS id FROM transaction, user " +
+                "WHERE user.userID NOT IN (SELECT transaction.userID " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                String.format("AND transactionDate Between '%s' AND '%s') ", startDate, endDate ) +
+                "GROUP BY user.userID;") ;
+        return temp.toString();
+    }
+
+    private String case7_3(int userID) {
+        StringBuilder temp = new StringBuilder();
+        temp.append("SELECT user.userID, transactionlineitem.productID, product.productName, transactionlineitem.quantity " +
+                "FROM transactionlineitem INNER JOIN transaction ON " +
+                "transaction.transactionID = transactionlineitem.transactionID INNER JOIN product ON " +
+                "product.productID = transactionlineitem.productID INNER JOIN user ON transaction.userID = user.userID " +
+                String.format("WHERE user.userID = %d ORDER BY quantity DESC LIMIT 1;", userID));
+        return temp.toString();
+    }
+
+    private String case7_4() {
+        StringBuilder temp = new StringBuilder();
+        temp.append("SELECT user.userID AS id, CONCAT(firstName, \" \", LastName) AS name, " +
+                "email, \"No_Purchases\" AS most_bought FROM user, transaction " +
+                "WHERE user.userID NOT IN (SELECT transaction.userID AS id " +
+                "FROM user, transaction WHERE user.userID = transaction.userID " +
+                "GROUP BY transaction.userID) Group By user.userID;");
+        return temp.toString();
     }
 }

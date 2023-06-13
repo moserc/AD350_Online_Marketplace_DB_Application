@@ -41,7 +41,7 @@ public class Main {
             System.out.println("4 --> Least Popular Items in time range");
             System.out.println("5 --> Modify a product's quantity");
             System.out.println("6 --> Delete a product from inventory");
-            System.out.println("7 --> Gets list of users haven't purchased in months");
+            System.out.println("7 --> List users to send promotional emails");
             System.out.println("8 --> exit\n");
 
             System.out.print("Enter Option: ");
@@ -124,41 +124,11 @@ public class Main {
                     dbHelper.DeleteProductIDFromInventory();
                     break;
                 case 7:
-                    input.nextLine();
-                    String[] currentDate = ensureInputFormat("^\\d{4}-\\d{2}-\\d{2}$", "Current Date").split("-");
-                    int months = ensureInputInteger("Passed Months Since Last Purchase");
-
-                    Calendar cal = Calendar.getInstance();
-                    cal.set(Calendar.YEAR, Integer.parseInt(currentDate[0]));
-                    cal.set(Calendar.MONTH, Integer.parseInt(currentDate[1])-1);
-                    cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(currentDate[2]));
-                    cal.roll(Calendar.MONTH, -1*Math.abs(months));
-                    cal.roll(Calendar.YEAR, (-1*Math.abs(months))/12);
-
-                    String startDate = String.format("%d-%d-%d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH));
-
                     try {
-                        PreparedStatement st = conn.prepareStatement("SELECT u.userID AS ID, u.email AS Email, concat( u.firstName,\" \", u.lastName) AS Name " +
-                                "FROM user u " +
-                                "WHERE u.userID NOT IN (" +
-                                "    SELECT t.userID" +
-                                "    FROM transaction t" +
-                                "    WHERE t.transactionDate >= ?" +
-                                ")");
-
-                        st.setString(1, startDate);
-
-                        ResultSet rs = st.executeQuery();
-                        System.out.println("Users To Email:");
-                        while(rs.next())
-                        {
-                            System.out.printf("\tId : %s, Name : %s, Email : %s%n", rs.getString("ID"), rs.getString("Name"), rs.getString("Email"));
-                        }
-
+                        dbHelper.processCase7();
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        System.out.println(e);
                     }
-
                     break;
                 default:
                     if(option == 8) continue;
